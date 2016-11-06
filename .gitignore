@@ -1,0 +1,12 @@
+# Auto-generated file
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+
+# Builded file
+*.pdf
+*.div
+
