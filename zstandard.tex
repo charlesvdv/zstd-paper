@@ -19,8 +19,8 @@ Charles Vandevoorde\\
 \maketitle
 
 \begin{abstract}
-    Compression algorithm are used everywhere in modern computing: database, web assets, \ldots
-    This paper analyse a new compression algorithm presented this year by a team at
+    Compression algorithms are used everywhere in modern computing: database, web assets, \ldots
+    This paper analyses a new compression algorithm presented this year by a team at
     \textit{Facebook}. First, we will analyse how the compression algorithm works then we will study
     how a compressed document is formatted in file. Finally, we will see how Zstandard arrive at
     such good compression ratio with a great speed. The speed is mostly due to the use of modern
@@ -36,9 +36,9 @@ Charles Vandevoorde\\
     lot of information. Lossless compression algorithm allow them to reduce the cost of servers and
     cut down bandwidth. The most common general purpose algorithm for data compression nowadays is
     deflate with his known implementation zlib.  This library has been around for nearly two decades
-    and no others algorithms can reach a ratio speed and space that balanced. Using modern
+    and no others algorithms could reach a ratio speed and space that balanced. Using modern
     technology, a \textit{Facebook} team happen to get a way better time and space ratio with their
-    new algorithm Zstandard. I will demonstrate how Zstandard come to this performance using modern
+    new algorithm Zstandard. I will demonstrate how Zstandard comes to this performance using modern
     hardware properties and new algorithm research.
 
 \section{Compression algorithm \\ explained}
@@ -50,12 +50,12 @@ Charles Vandevoorde\\
     literal and copy it until the copy lenght is fulfilled. This operation is called \textit{match
     and copy}.
 
-    Zstandard use also another well known compression algorithm, the run-lenght encoding algorithm
+    Zstandard uses also another well known compression algorithm, the run-lenght encoding algorithm
     (also known as RLE). This algorithm replace a repeating sequence with the lowest common
     denomitor of the sequence and with the total lenght of the repeating sequence. With this two
     information, Zstandard can regenerate the repeating sequence.
 
-    Secondly, Zstandard use a method called entropy encoding to reduce the number of bits needed to
+    Secondly, Zstandard uses a method called entropy encoding to reduce the number of bits needed to
     encode a literal. An entropy encoder use the occurence probability of literals to generate
     specifics prefixes codes. A prefix code is a word code with the property that no others words
     codes have the same prefix. Prefix code can thus create literals with varying lenght. Those
@@ -63,14 +63,14 @@ Charles Vandevoorde\\
     probabilities reducing lenght of common literals and increasing the lenght for rares one. The
     average lenght can therefore be reduced. Information from \textit{match and copy} operations can
     also be encoded to reduce the compressed size further. A widely known entropy encoder is the
-    Huffman encoder used in the deflate algorithm. Zstandard use Huff0 and FSE as entropy coder.
+    Huffman encoder used in the deflate algorithm. Zstandard uses Huff0 and FSE as entropy coder.
 
     \subsection{Entropy coder}
     \subsubsection{Huff0}
         Huff0 is an implementation of an Huffman coder. This implementation is faster than the
-        zlib one because it use some optimisations discussed in Section \ref{sec:perf}.
+        zlib one because it uses some optimisations discussed in Section \ref{sec:perf}.
 
-        The huffman algorithm create a binary tree structure from the bottom up where the hightest
+        The huffman algorithm creates a binary tree structure from the bottom up where the hightest
         weight (number of occurence of a sequence) is on top and the lowest weight are on the
         bottom. If the left and right edges have respective value of 0 and 1, a prefix code can be
         defined for each sequence with his bit lenght inversely proportional to his occurence
@@ -82,48 +82,47 @@ Charles Vandevoorde\\
         probability can be encoded. This entropy can be achieved because high probability sequence
         can be encoded with less than a bit. The main drawback is massive usage of multiplication
         and division which can be very slow. FSE use a modified version of the arithmetic coder that
-        don't use any multiplication and division just addition, shifts and table lookup. The
+        doesn't use any multiplications and divisions but only additions, shifts and tables lookups. The
         functioning of this algorithm will not be discussed here because of his complexity.
 
 \section{Compression format}
     A compressed file with Zstandard \cite{compress_format} is a set of frames. Frames are
     independant parts containing some parameters and blocks which contains the compressed data. As
-    frame are independant, data can be added to the compressed file without recompress everything by
+    frames are independents, data can be added to the compressed file without recompress everything by
     appending a new frame at the end of the compress file. Frame parameters are for exemple a
     checksum for validating the information, the size of the sliding window, a dictionnary ID if we
-    use one and some others parameters giving the present parameters and mutliple sizes for the
+    use one and some others parameters giving the existing parameters and multiples sizes for the
     decoder.
 
     A block contains a flag to tell if it is the last block of the frame, a block type flag, the
     block size and then the block content. A block can have differents types such as RLE blocks,
-    Zstandard compressed block or raw blocks. A block has a 128 KB maximum size or if the sliding
-    window is lesser than the maximum size, the block has a max size equals to the sliding window.
+    Zstandard compressed blocks or raw blocks. A block has a 128 KB maximum size; but if the sliding
+    window is lesser than the maximum size, the block has a max size equal to the sliding window.
 
     The Zstandard compressed block is composed of a literals section and a sequences section. The
     literals section represent the data that will be used for the \textit{match and copy} operation.
-    The sequence section is representation of the \textit{match and copy operation} that give the lenght
-    of the literal to copy, the offset and a reconstruction lenght. The offset give the relative
-    position of previous block. When all the sequences of a block are decoded, if there is unused literal,
-    these bytes will be copied at the current position in the decompressed file. A block can also
-    contains an Huffman tree giving the prefix code translation.
+    The sequences section is a representation of the \textit{match and copy operation} that give the
+    lenght of the literal to copy, the offset and a reconstruction lenght. The offset gives the
+    relative position of the previous block. When all the sequences of a block are decoded, if there is
+    unused literal, these bytes will be copied at the current position in the decompressed file. A
+    block can also contains an Huffman tree giving the prefix code translation.
 
     The literals section can be encoded using the Huff0 for more speed or FSE for less size but the
-    sequence sections is forced to use the FSE encoding. Of course, those section can also not be
+    sequences sections are forced to use the FSE encoding. Of course, those sections can also not be
     encoded to gain more speed or because it doesn't improve the compression ratio.
 
 \section{Comparaison over deflate}
     \begin{figure}
         \centering
         \includegraphics[scale=0.5]{speed.jpg}
-        \caption{Comparaison between compression levels for zstd and zlib \newline
-        Source: \cite{presentation}}
+        \caption{Comparaison between compression levels for zstd and zlib}
         \label{fig:level}
     \end{figure}
     \begin{figure}
         \centering
         \includegraphics[scale=0.25]{speed_comp.jpg}
         \caption{Comparaison between compression and decompression speed between zstd and gzip
-        (default compression level) \\ Source: \cite{presentation}}
+        (default compression level)}
         \label{fig:speed}
     \end{figure}
     First of all, Zstandard can compress and decompress at a way bigger speed than
@@ -139,19 +138,19 @@ Charles Vandevoorde\\
     much history to work on. A dictionnary is a list of commonly used sequences and must be
     specifics for a given filetype or data format. Dictionnary compression improve the compression
     ratio from 150\% to nearly 500\% with data varying from 20 to 800KB \cite{dictionnary}.
-    Zstandard intregrate directly a tool to create those dictionnary with some data samples. Of
+    Zstandard intregrates directly a tool to create those dictionnary with some data samples. Of
     course, the decompression process will also need to have this dictionnary.
 
     \subsection{Performance}\label{sec:perf}
     \subsubsection{Memory}
         Zstandard can use up to terabytes of memory for some levels but also less than 1Mb of memory
-        for the first level \cite{presentation} allowing Zstandard to run on huge datacenter and on
+        for the first level \cite{presentation}. It allows Zstandard to run on huge datacenter and on
         embedded environments with limited ressources. Memory play a role in the compression ratio
-        because more memory means a bigger sliding window meaning a bigger use of past data.
+        because more memory means a bigger sliding window and a bigger use of past data.
 
     \subsubsection{Parallel excecution}
         Today's CPU can execute multiples instructions in one cycle thanks to multiple hardware
-        optimisations. Superscalar CPU \cite{superscalar} execute multiple instructions in one cycle
+        optimisations. Superscalar CPU \cite{superscalar} executes several instructions in one cycle
         by dispatching these instructions onto differents execution units as ALU, FPU, \ldots{}
         Another feature used is the out-of-order execution \cite{outoforder}. A processor using this
         technique will dynamically reorganize the order of the instructions by data avaibility. The
@@ -165,96 +164,34 @@ Charles Vandevoorde\\
         execute the first part, then the second, \ldots{} A more optimazed approach would use an
         "assembly line" like methodology. Each instruction part can be executed in a different
         portion of the CPU and then passed to the following portion so three differents instructions
-        parts are decoded in the same cycle instead of one. This method give us a huge speed
+        parts can be decoded in the same cycle instead of one. This method gives us a huge speed
         improvement without increasing the clock speed.
 
-        Modern CPU use also another trick to be faster, branch prediction. A branch can be see as a
-        \textit{if-else} statement. When the processor is waiting for the conditionnal jump
-        instruction to be executed, the CPU can gamble on which branch will be correct allowing
-        to move forward in the program's instructions. If the branch is the correct one, the CPU
+        Modern CPU use also another trick to be faster; the branch prediction. A branch can be seen
+        as a \textit{if-else} statement. When the processor is waiting for the conditionnal jump
+        instruction to be executed, the CPU can gamble on which branch will be correct allowing to
+        move forward in the program's instructions. If the branch is the correct one, the CPU
         continue with his lead but if the branch is not correct, the CPU have to play back the
         instructions and execute the other branch. The problem with branch prediction is when we
-        have also instruction pipelining because the pipeline has to be cleared before restarting.
-        Instruction pipelining clearing takes a lot of times for a modern CPU as shown on Figure
-        \ref{fig:costop}. Zstandard use what is called branchless design in critical section to
+        have also instruction pipelining, because the pipeline has to be cleared before restarting.
+        Instruction pipelining clearing takes a lot of time for a modern CPU as shown on Figure
+        \ref{fig:costop}. Zstandard uses what is called branchless design in critical section to
         avoid this instruction pipeline flush. Branchless code is a code where there isn't any
         branch i.e. \textit{if-else}, \textit{while/for loops}, \ldots
 
         \begin{figure}
             \centerline{\includegraphics[scale=0.11]{costCPUop.png}}
-            \caption{Operation cost per CPU cycle (Scale is logarithmic). \\ Source: \cite{costop}}
+            \caption{Operation cost per CPU cycle (Scale is logarithmic).}
             \label{fig:costop}
         \end{figure}
 
 \section{Conclusions}
-    In this paper, we highlight the importance of well-knowing the architecture of a computer and
+    In this paper, we highlighted the importance of well-knowing the architecture of a computer and
     how computer components are working below all the abstractions given by the OS and the
     programming language. We can see that the Zstandard team try to use every bit of optimisations
     possible which is very important in a CPU heavy application like compression.
 
-%ACKNOWLEDGMENTS are optional
-% \section{Acknowledgments}
-%
-% The following two commands are all you need in the
-% initial runs of your .tex file to
-% produce the bibliography for the citations in your paper.
-% \bibliographystyle{abbrv}
+\newpage
 \bibliographystyle{unsrt}
 \bibliography{biblio}  % sigproc.bib is the name of the Bibliography in this case
-% You must have a proper ".bib" file
-%  and remember to run:
-% latex bibtex latex latex
-% to resolve all references
-%
-% ACM needs 'a single self-contained file'!
-%
-%APPENDICES are optional
-%\balancecolumns
-% \appendix
-%Appendix A
-% \section{Headings in Appendices}
-% The rules about hierarchical headings discussed above for
-% the body of the article are different in the appendices.
-% In the \textbf{appendix} environment, the command
-% \textbf{section} is used to
-% indicate the start of each Appendix, with alphabetic order
-% designation (i.e. the first is A, the second B, etc.) and
-% a title (if you include one).  So, if you need
-% hierarchical structure
-% \textit{within} an Appendix, start with \textbf{subsection} as the
-% highest level. Here is an outline of the body of this
-% document in Appendix-appropriate form:
-% \subsection{Introduction}
-% \subsection{The Body of the Paper}
-% \subsubsection{Type Changes and  Special Characters}
-% \subsubsection{Math Equations}
-% \paragraph{Inline (In-text) Equations}
-% \paragraph{Display Equations}
-% \subsubsection{Citations}
-% \subsubsection{Tables}
-% \subsubsection{Figures}
-% \subsubsection{Theorem-like Constructs}
-% \subsubsection*{A Caveat for the \TeX\ Expert}
-% \subsection{Conclusions}
-% \subsection{Acknowledgments}
-% \subsection{Additional Authors}
-% This section is inserted by \LaTeX; you do not insert it.
-% You just add the names and information in the
-% \texttt{{\char'134}additionalauthors} command at the start
-% of the document.
-% \subsection{References}
-% Generated by bibtex from your ~.bib file.  Run latex,
-% then bibtex, then latex twice (to resolve references)
-% to create the ~.bbl file.  Insert that ~.bbl file into
-% the .tex source file and comment out
-% the command \texttt{{\char'134}thebibliography}.
-% % This next section command marks the start of
-% % Appendix B, and does not continue the present hierarchy
-% \section{More Help for the Hardy}
-% The sig-alternate.cls file itself is chock-full of succinct
-% and helpful comments.  If you consider yourself a moderately
-% experienced to expert user of \LaTeX, you may find reading
-% it useful but please remember not to change it.
-% %\balancecolumns % GM June 2007
-% % That's all folks!
 \end{document}
